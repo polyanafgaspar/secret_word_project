@@ -40,6 +40,7 @@
 }
 
 .letterContainer input {
+  all: unset;
   height: 50px;
   width: 50px;
   font-size: 2em;
@@ -50,3 +51,6 @@
   color: rgb(98, 74, 206);
 }
 
+.letterContainer input:focus {
+  border: 2px solid rgb(131, 84, 161);
+}
