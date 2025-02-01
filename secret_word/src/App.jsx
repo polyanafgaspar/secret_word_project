@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import StartScreen from "./components/StartScreen/StartScreen";
 import Game from "./components/Game/Game";
@@ -11,7 +11,7 @@ const stages = [
   { id: 3, name: "end" },
 ];
 
-const guessesQty = 3
+const guessesQty = 3;
 
 function App() {
   const [gameStage, setGameStage] = useState(stages[0].name);
@@ -26,19 +26,12 @@ function App() {
   const [guesses, setGuesses] = useState(guessesQty);
   const [score, setScore] = useState(0);
 
-  useEffect(() => {
-    if (guesses <= 0) {
-      setGameStage(stages[2].name);
-      clearLetterStates();
-    }
-  }, [guesses]);
-
   const clearLetterStates = () => {
     setGuessedLetters([]);
     setWrongLetters([]);
   };
 
-  const pickWordAndCategory = () => {
+  const pickWordAndCategory = useCallback(() => {
     const categories = Object.keys(words);
     const category =
       categories[Math.floor(Math.random() * Object.keys(categories).length)];
@@ -48,9 +41,11 @@ function App() {
       ];
 
     return { word, category };
-  };
+  }, [words]);
 
-  const startGame = () => {
+  const startGame = useCallback(() => {
+    clearLetterStates();
+
     const { word, category } = pickWordAndCategory();
 
     let wordLetters = word.split("");
@@ -60,7 +55,7 @@ function App() {
     setPickedWord(word);
     setLetters(wordLetters);
     setGameStage(stages[1].name);
-  };
+  }, [pickWordAndCategory]);
 
   const verifyLetter = (letter) => {
     const normalizedLetter = letter.toLowerCase();
@@ -88,10 +83,26 @@ function App() {
   };
 
   const retry = () => {
-    setScore(0)
-    setGuesses(guessesQty)
+    setScore(0);
+    setGuesses(guessesQty);
     setGameStage(stages[0].name);
   };
+
+  useEffect(() => {
+    if (guesses <= 0) {
+      setGameStage(stages[2].name);
+      clearLetterStates();
+    }
+  }, [guesses]);
+
+  useEffect(() => {
+    const uniqueLetters = [...new Set(letters)];
+
+    if (guessedLetters.length === uniqueLetters.length) {
+      setScore((actual) => (actual += 100));
+      startGame();
+    }
+  }, [guessedLetters, letters, startGame]);
 
   return (
     <div className="App">
